@@ -50,15 +50,19 @@ sudo apt-get install burpsuite -y
 
 ## Install Docker
 
-**Add the docker apt source**
+**Install Required Dependencies**
 
-`printf '%s\n' "deb https://download.docker.com/linux/debian bullseye stable" | sudo tee /etc/apt/sources.list.d/docker-ce.list`
+`sudo apt install -y apt-transport-https ca-certificates curl software-properties-common`
 
-**Next, let's download and import the gpg key**
+**Add Docker's Official GPG Key**
 
-`curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/docker-ce-archive-keyring.gpg`
+`curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg`
 
-**Update the apt repository**
+**Add the Docker Repository**
+
+`echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian kali-rolling stable" | sudo tee /etc/apt/sources.list.d/docker.list`
+
+**Update the Repository List**
 
 `sudo apt update -y`
 
@@ -68,7 +72,7 @@ sudo apt-get install burpsuite -y
 
 **Start the Docker Service** 
 
-`sudo service docker start`
+`sudo systemctl start docker`
 
 ## Start the Lab
 `sudo make deploy`
