@@ -60,7 +60,7 @@ sudo apt-get install burpsuite -y
 
 **Add the Docker Repository**
 
-`echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian kali-rolling stable" | sudo tee /etc/apt/sources.list.d/docker.list`
+`echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian bookworm stable" | sudo tee /etc/apt/sources.list.d/docker.list`
 
 **Update the Repository List**
 

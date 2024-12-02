@@ -63,7 +63,7 @@ status() {
     expected_containers=$(grep -c container_name docker-compose.yml)
     running_containers=$(docker ps | grep -c lab-)
 
-    [[ "${running_containers}" -eq "${expected_containers}" ]]
+    [[ ! "${running_containers}" -eq "${expected_containers}" ]]
 }
 
 deploy() {
