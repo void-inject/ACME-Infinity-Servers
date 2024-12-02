@@ -15,15 +15,15 @@ if [[ "$(id -u)" -ne 0 ]]; then
     exit 1
 fi
 
-if ! docker info >/dev/null 2>&1; then
-    echo "Docker service appears to not be running. Use the service command to start it manually."
-    echo "$ sudo service docker start"
+if ! systemctl is-active --quiet docker; then
+    echo "Docker service appears to not be running. Start it using:"
+    echo "$ sudo systemctl start docker"
     exit 1
 fi
 
-if ! docker compose version &>/dev/null; then
-    echo "Docker Compose is not installed. Did you follow the Docker Compose setup instructions?"
-    echo "https://github.com/void-inject/ACME-Infinity-Servers/tree/master/lab#install-docker"
+if ! command -v docker-compose &>/dev/null && ! command -v docker compose &>/dev/null; then
+    echo "Docker Compose is not installed. Install it following these instructions:"
+    echo "https://docs.docker.com/compose/install/"
     exit 1
 fi
 
@@ -33,49 +33,37 @@ if [[ ! -f "${LOG}" ]]; then
 fi
 
 wait() {
-    local pid
-    local counter
-    local spinner
+    local pid=$1
+    local message=$2
+    local spinner="/-\|"
+    local i=0
 
-    pid=$1
-    counter=1
-    spinner="/-\|"
-
-    echo -n "$2"
-    echo -n " "
-    while ps -p "${pid}" &>/dev/null; do
-        printf "\b${spinner:counter++%${#spinner}:1}"
-        sleep 0.5
+    echo -n "${message} "
+    while kill -0 "${pid}" &>/dev/null; do
+        printf "\b%s" "${spinner:i++%${#spinner}:1}"
+        sleep 0.1
     done
     echo
 }
 
 images_built() {
-    local total_expected_containers
-    local total_built_images
+    local expected_containers
+    local built_images
 
-    total_expected_containers="$(grep -c container_name docker-compose.yml)"
-    total_built_images="$(docker images | grep -c lab-)"
+    expected_containers=$(grep -c container_name docker-compose.yml)
+    built_images=$(docker images | grep -c lab-)
 
-    if [[ "${total_built_images}" -eq "${total_expected_containers}" ]]; then
-        return 0
-    else
-        return 1
-    fi
+    [[ "${built_images}" -eq "${expected_containers}" ]]
 }
 
 status() {
-    local total_expected_containers
-    local actual_running_containers
+    local expected_containers
+    local running_containers
 
-    total_expected_containers="$(grep -c container_name docker-compose.yml)"
-    actual_running_containers="$(docker ps | grep -c lab-)"
+    expected_containers=$(grep -c container_name docker-compose.yml)
+    running_containers=$(docker ps | grep -c lab-)
 
-    if [[ "${actual_running_containers}" -ne "${total_expected_containers}" ]]; then
-        return 1
-    else
-        return 0
-    fi
+    [[ "${running_containers}" -eq "${expected_containers}" ]]
 }
 
 deploy() {
@@ -84,58 +72,58 @@ deploy() {
 
     if ! images_built; then
         echo "This process can take a few minutes to complete."
-        echo "Start Time: $(date "+%T")" >>$LOG
+        echo "Start Time: $(date "+%T")" >>"${LOG}"
 
         if [[ -z "${DEBUG}" ]]; then
-            echo "You may run \"tail -f $LOG\" from another terminal session to see the progress of the deployment."
+            echo "Monitor progress using: tail -f ${LOG}"
         fi
 
-        docker build -f machines/Dockerfile-base -t lab_base . &>>$LOG
-        docker compose build --parallel &>>$LOG &
-        wait "$!" "Deploying the lab..."
-        docker compose up --detach &>>$LOG
+        docker build -f machines/Dockerfile-base -t lab_base . &>>"${LOG}"
+        docker compose build --parallel &>>"${LOG}" &
+        wait "$!" "Building and deploying the lab..."
+        docker compose up --detach &>>"${LOG}"
 
         if status; then
-            echo "OK: all containers appear to be running. Performing a couple of post provisioning steps..." | tee -a $LOG
+            echo "OK: All containers are running. Performing post-provisioning steps..." | tee -a "${LOG}"
             sleep 25
-            if check_post_actions &>>$LOG; then
-                echo "OK: Lab is up and provisioned." | tee -a $LOG
+            if check_post_actions &>>"${LOG}"; then
+                echo "OK: Lab is up and provisioned." | tee -a "${LOG}"
             else
-                echo "Error: something went wrong during provisioning." | tee -a $LOG
+                echo "Error: Post-provisioning steps failed." | tee -a "${LOG}"
             fi
         else
-            echo "Error: not all containers are running. check the log file: $LOG"
+            echo "Error: Not all containers are running. Check the log file: ${LOG}"
         fi
     else
-        docker compose up --detach &>>$LOG
+        docker compose up --detach &>>"${LOG}"
         sleep 5
         if status; then
             echo "Lab is up."
         else
-            echo "Lab is down. Try rebuilding the lab again."
+            echo "Lab is down. Try rebuilding."
         fi
     fi
-    echo "End Time: $(date "+%T")" >>$LOG
+    echo "End Time: $(date "+%T")" >>"${LOG}"
 }
 
 teardown() {
     echo
-    echo "==== Shutdown Started ====" | tee -a $LOG
+    echo "==== Teardown Started ====" | tee -a "${LOG}"
     docker compose down --volumes
-    echo "OK: lab has shut down."
+    echo "OK: Lab has shut down."
 }
 
 clean() {
     echo
     echo "==== Cleanup Started ===="
     docker compose down --volumes --rmi all &>/dev/null &
-    wait "$!" "Shutting down the lab..."
+    wait "$!" "Cleaning up the lab..."
 
     docker system prune -a --volumes -f &>/dev/null &
-    wait "$!" "Cleaning up..."
+    wait "$!" "Removing unused Docker resources..."
 
     [[ -f "${LOG}" ]] && >"${LOG}"
-    echo "OK: lab environment has been destroyed."
+    echo "OK: Lab environment cleaned up."
 }
 
 rebuild() {
@@ -165,6 +153,6 @@ status)
     fi
     ;;
 *)
-    echo "Usage: ./$(basename "$0") deploy | teardown | rebuild | clean | status"
+    echo "Usage: $(basename "$0") deploy | teardown | rebuild | clean | status"
     ;;
 esac
