@@ -88,7 +88,7 @@ install_docker() {
 
 deploy_containers() {
     echo "Deploying containers..."
-    # Add your container deployment logic here (if any)
+    sudo make deploy
 }
 
 install_tools() {
