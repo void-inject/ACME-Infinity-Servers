@@ -79,7 +79,7 @@ install_docker() {
         echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian kali-rolling stable" | sudo tee /etc/apt/sources.list.d/docker.list
         apt update -y
         apt install -y docker-ce docker-ce-cli containerd.io
-        systemctl enable --now docker
+        systemctl enable docker --now
         usermod -aG docker "${SUDO_USER}"
     else
         echo "Docker is already installed."
@@ -88,7 +88,7 @@ install_docker() {
 
 deploy_containers() {
     echo "Deploying containers..."
-    sudo make deploy
+    make deploy
 }
 
 install_tools() {
