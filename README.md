@@ -18,7 +18,7 @@ This branch is dedicated to the **Lab Environment** called **ACME Infinity Serve
 
 ## Notes
 
-- The lab was tested on [Kali Linux 2023.4](https://old.kali.org/kali-images/kali-2023.4/kali-linux-2023.4-installer-amd64.iso).
+- The lab was tested on [Kali Linux 2024.3](https://mirror.twds.com.tw/kali-images/kali-2024.3/kali-linux-2024.3-installer-amd64.iso)
 - If Burp Suite is not available, install it using:
 ```bash
 sudo apt-get install burpsuite -y
