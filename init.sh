@@ -78,7 +78,7 @@ install_docker() {
         curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
         echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian kali-rolling stable" | sudo tee /etc/apt/sources.list.d/docker.list
         apt update -y
-        apt install -y docker-ce docker-ce-cli containerd.io
+        apt install docker-ce docker-ce-cli containerd.io -y
         systemctl enable docker --now
         usermod -aG docker "${SUDO_USER}"
     else
@@ -111,7 +111,7 @@ install_whatweb() {
 install_rustscan() {
     docker pull rustscan/rustscan:2.1.1
     if ! grep -q "alias rustscan=" "${USER_HOME_BASE}/.bashrc"; then
-        echo "alias rustscan='docker run --rm --network host rustscan/rustscan:2.1.1'" >>"${USER_HOME_BASE}/.bashrc"
+        echo "alias rustscan='docker run --rm --network host rustscan/rustscan:2.1.1'" >>"${USER_HOME_BASE}/.zshrc"
     fi
 }
 
@@ -138,8 +138,7 @@ install_dirsearch() {
 }
 
 install_sysutilities() {
-    apt install -y jq ncat sshpass
-    pip3 install pwncat-cs
+    apt install -y jq ncat sshpass pwncat
 }
 
 install_unixprivesccheck() {
