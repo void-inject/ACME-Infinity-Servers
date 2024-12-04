@@ -74,12 +74,13 @@ install_docker() {
     if ! command -v docker &>/dev/null; then
         echo "Installing Docker..."
         apt update -y
-        apt install -y apt-transport-https ca-certificates curl software-properties-common gnupg
+        apt install apt-transport-https ca-certificates curl software-properties-common gnupg -y
         curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
         echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian kali-rolling stable" | sudo tee /etc/apt/sources.list.d/docker.list
         apt update -y
         apt install docker-ce docker-ce-cli containerd.io -y
-        systemctl enable docker --now
+        systemctl enable docker
+        systemctl start docker
         usermod -aG docker "${SUDO_USER}"
     else
         echo "Docker is already installed."
@@ -100,23 +101,27 @@ install_tools() {
     install_gitjacker
     install_linenum
     install_dirsearch
-    install_sysutilities
+    install_pwncat
     install_unixprivesccheck
 }
 
 install_whatweb() {
-    apt install -y whatweb
+    apt install whatweb -y
 }
 
 install_rustscan() {
     docker pull rustscan/rustscan:2.1.1
     if ! grep -q "alias rustscan=" "${USER_HOME_BASE}/.bashrc"; then
+        echo "alias rustscan='docker run --rm --network host rustscan/rustscan:2.1.1'" >>"${USER_HOME_BASE}/.bashrc"
+    fi
+
+    if ! grep -q "alias rustscan=" "${USER_HOME_BASE}/.zshrc"; then
         echo "alias rustscan='docker run --rm --network host rustscan/rustscan:2.1.1'" >>"${USER_HOME_BASE}/.zshrc"
     fi
 }
 
 install_nuclei() {
-    apt install -y nuclei
+    apt install nuclei -y
 }
 
 install_linux_exploit_suggester_2() {
@@ -134,11 +139,11 @@ install_linenum() {
 }
 
 install_dirsearch() {
-    apt install -y dirsearch
+    apt install dirsearch -y
 }
 
-install_sysutilities() {
-    apt install -y jq ncat sshpass pwncat
+install_pwncat() {
+    apt install jq ncat sshpass pwncat -y
 }
 
 install_unixprivesccheck() {
