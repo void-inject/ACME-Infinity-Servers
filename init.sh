@@ -87,11 +87,6 @@ install_docker() {
     fi
 }
 
-deploy_containers() {
-    echo "Deploying containers..."
-    make deploy
-}
-
 install_tools() {
     echo "Installing tools..."
     install_whatweb
@@ -158,10 +153,7 @@ check_prerequisites
 echo "[1/3] Installing Docker..."
 install_docker &>>"${BHB_INSTALL_LOG}"
 
-echo "[2/3] Deploying containers..."
-deploy_containers
-
-echo "[3/3] Installing additional tools..."
+echo "[1/2] Installing additional tools..."
 install_tools &>>"${BHB_INSTALL_LOG}"
 
 chown -R "${SUDO_USER}:${SUDO_USER}" "${BHB_TOOLS_FOLDER}"
