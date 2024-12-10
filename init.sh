@@ -150,7 +150,7 @@ echo "Starting installation process..."
 
 check_prerequisites
 
-echo "[1/3] Installing Docker..."
+echo "[1/2] Installing Docker..."
 install_docker &>>"${BHB_INSTALL_LOG}"
 
 echo "[1/2] Installing additional tools..."
