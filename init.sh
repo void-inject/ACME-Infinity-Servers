@@ -152,7 +152,7 @@ check_prerequisites
 echo "[1/2] Installing Docker..."
 install_docker &>>"${BHB_INSTALL_LOG}"
 
-echo "[1/2] Installing additional tools..."
+echo "[2/2] Installing additional tools..."
 install_tools &>>"${BHB_INSTALL_LOG}"
 
 chown -R "${SUDO_USER}:${SUDO_USER}" "${BHB_TOOLS_FOLDER}"
